@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-dotenv
+ 
+langchain
+langchain-google-genai 
+langchain-community
+chromadb 
+supabase
+pdfplumber 
+python-multipart
+pypdf 
+sentence-transformers
+groq 
+google-genai       
