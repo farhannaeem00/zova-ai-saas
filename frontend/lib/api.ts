@@ -113,4 +113,14 @@ deleteSession: async (sessionId: string) => {
     });
     return res.json();
   },
+
+  // Rate a message
+rateMessage: async (messageId: string, rating: string) => {
+  const res = await fetch(`${API_URL}/api/chat/rate/${messageId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rating }),
+  });
+  return res.json();
+},
 };

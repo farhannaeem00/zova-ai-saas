@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from services.rag_service import search_similar_chunks
@@ -98,6 +98,18 @@ async def delete_session(session_id: str):
     try:
         supabase.table("messages").delete().eq("session_id", session_id).execute()
         supabase.table("chat_sessions").delete().eq("id", session_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.put("/rate/{message_id}")
+async def rate_message(message_id: str, request: Request):
+    try:
+        body = await request.json()
+        rating = body.get("rating")
+        supabase.table("messages").update(
+            {"rating": rating}
+        ).eq("id", message_id).execute()
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

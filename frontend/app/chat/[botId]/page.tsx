@@ -32,6 +32,7 @@ export default function ChatPage() {
   const [editingMsg, setEditingMsg] = useState<number | null>(null);
   const [editInput, setEditInput] = useState("");
   const [copiedMsg, setCopiedMsg] = useState<number | null>(null);
+  const [ratings, setRatings] = useState<{[key: number]: string}>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,6 +161,11 @@ const handleRetry = async (index: number) => {
 const handleEdit = (index: number, content: string) => {
   setEditingMsg(index);
   setEditInput(content);
+};
+
+
+const handleRate = async (index: number, rating: string) => {
+  setRatings((prev) => ({ ...prev, [index]: rating }));
 };
 
 const handleEditSend = async (index: number) => {
@@ -383,52 +389,90 @@ const handleEditSend = async (index: number) => {
         </div>
 
         {/* Action Buttons on Hover */}
-        {hoveredMsg === i && editingMsg !== i && (
-          <div className={`flex items-center gap-1 mt-1 ${msg.role === "user" ? "mr-2" : "ml-10"}`}>
-            {/* Copy Button */}
-            <div className="relative group/tooltip">
-              <button
-                onClick={() => handleCopy(msg.content, i)}
-                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
-              >
-                {copiedMsg === i ? "✅" : "📋"}
-              </button>
-              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
-                {copiedMsg === i ? "Copied!" : "Copy"}
-              </span>
-            </div>
+        {/* Action Buttons on Hover */}
+{hoveredMsg === i && editingMsg !== i && (
+  <div className={`flex items-center gap-1 mt-1 ${msg.role === "user" ? "mr-2" : "ml-10"}`}>
+    {/* Copy Button */}
+    <div className="relative group/tooltip">
+      <button
+        onClick={() => handleCopy(msg.content, i)}
+        className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
+      >
+        {copiedMsg === i ? "✅" : "📋"}
+      </button>
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
+        {copiedMsg === i ? "Copied!" : "Copy"}
+      </span>
+    </div>
 
-            {/* Retry Button — only for assistant */}
-            {msg.role === "assistant" && (
-              <div className="relative group/tooltip">
-                <button
-                  onClick={() => handleRetry(i)}
-                  className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
-                >
-                  🔄
-                </button>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
-                  Retry
-                </span>
-              </div>
-            )}
+    {/* Retry Button — only for assistant */}
+    {msg.role === "assistant" && (
+      <div className="relative group/tooltip">
+        <button
+          onClick={() => handleRetry(i)}
+          className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
+        >
+          🔄
+        </button>
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
+          Retry
+        </span>
+      </div>
+    )}
 
-            {/* Edit Button — only for user */}
-            {msg.role === "user" && (
-              <div className="relative group/tooltip">
-                <button
-                  onClick={() => handleEdit(i, msg.content)}
-                  className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
-                >
-                  ✏️
-                </button>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
-                  Edit
-                </span>
-              </div>
-            )}
-          </div>
-        )}
+    {/* Edit Button — only for user */}
+    {msg.role === "user" && (
+      <div className="relative group/tooltip">
+        <button
+          onClick={() => handleEdit(i, msg.content)}
+          className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-xs"
+        >
+          ✏️
+        </button>
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
+          Edit
+        </span>
+      </div>
+    )}
+
+    {/* Rating Buttons — only for assistant */}
+    {msg.role === "assistant" && (
+      <>
+        <div className="relative group/tooltip">
+          <button
+            onClick={() => handleRate(i, "good")}
+            className={`p-1.5 rounded-lg transition text-xs ${
+              ratings[i] === "good"
+                ? "text-green-400 bg-green-500/10"
+                : "text-gray-500 hover:text-green-400 hover:bg-gray-800"
+            }`}
+          >
+            👍
+          </button>
+          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
+            Good response
+          </span>
+        </div>
+
+        <div className="relative group/tooltip">
+          <button
+            onClick={() => handleRate(i, "bad")}
+            className={`p-1.5 rounded-lg transition text-xs ${
+              ratings[i] === "bad"
+                ? "text-red-400 bg-red-500/10"
+                : "text-gray-500 hover:text-red-400 hover:bg-gray-800"
+            }`}
+          >
+            👎
+          </button>
+          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition whitespace-nowrap">
+            Bad response
+          </span>
+        </div>
+      </>
+    )}
+  </div>
+)}
       </div>
     ))}
 
