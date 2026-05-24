@@ -33,6 +33,8 @@ export default function ChatPage() {
   const [editInput, setEditInput] = useState("");
   const [copiedMsg, setCopiedMsg] = useState<number | null>(null);
   const [ratings, setRatings] = useState<{[key: number]: string}>({});
+  const [renamingSession, setRenamingSession] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +72,16 @@ export default function ChatPage() {
       msgs.map((m: any) => ({ role: m.role, content: m.content }))
     );
   };
+
+  const handleRename = async (sessionId: string) => {
+  if (!renameValue.trim()) return;
+  await api.renameSession(sessionId, renameValue);
+  setSessions(sessions.map((s) =>
+    s.id === sessionId ? { ...s, title: renameValue } : s
+  ));
+  setRenamingSession(null);
+  setRenameValue("");
+};
 
 
   const handleDeleteSession = async (e: any, sid: string) => {
@@ -232,33 +244,82 @@ const handleEditSend = async (index: number) => {
               <div className="space-y-1">
                 <p className="text-xs text-gray-500 px-2 py-1">Recent</p>
                 {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    onClick={() => loadSession(session)}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer group transition ${
-                      sessionId === session.id
-                        ? "bg-indigo-600/20 border border-indigo-500/30"
-                        : "hover:bg-gray-800"
-                    }`}
+          <div
+            key={session.id}
+            onClick={() => renamingSession !== session.id && loadSession(session)}
+            className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer group transition ${
+              sessionId === session.id
+                ? "bg-indigo-600/20 border border-indigo-500/30"
+                : "hover:bg-gray-800"
+            }`}
+          >
+            <div className="flex-1 min-w-0">
+              {renamingSession === session.id ? (
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRename(session.id);
+                      if (e.key === "Escape") setRenamingSession(null);
+                    }}
+                    autoFocus
+                    className="flex-1 bg-gray-700 text-white text-xs rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                  />
+                  <button
+                    onClick={() => handleRename(session.id)}
+                    className="text-green-400 hover:text-green-300 text-xs"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-200 truncate">
-                          {session.title && session.title !== "New Chat" 
-                          ? session.title 
-                          : messages[0]?.content?.slice(0, 40) || "New Chat"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(session.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => handleDeleteSession(e, session.id)}
-                      className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition ml-2 text-xs"
-                    >
-                      🗑
-                    </button>
-                  </div>
-                ))}
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => setRenamingSession(null)}
+                    className="text-red-400 hover:text-red-300 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-200 truncate">
+                  {session.title && session.title !== "New Chat"
+                    ? session.title
+                    : messages[0]?.content?.slice(0, 40) || "New Chat"}
+                </p>
+              )}
+              {renamingSession !== session.id && (
+                <p className="text-xs text-gray-500">
+                  {new Date(session.created_at).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+
+    {/* Action buttons */}
+    {renamingSession !== session.id && (
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition ml-1">
+        {/* Rename button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setRenamingSession(session.id);
+            setRenameValue(session.title || "");
+          }}
+          className="text-gray-500 hover:text-white transition text-xs p-1 rounded hover:bg-gray-700"
+          title="Rename"
+        >
+          ✏️
+        </button>
+        {/* Delete button */}
+        <button
+          onClick={(e) => handleDeleteSession(e, session.id)}
+          className="text-gray-500 hover:text-red-400 transition text-xs p-1 rounded hover:bg-gray-700"
+          title="Delete"
+        >
+          🗑
+        </button>
+      </div>
+    )}
+  </div>
+))}
               </div>
             )}
           </div>

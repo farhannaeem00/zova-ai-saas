@@ -113,3 +113,16 @@ async def rate_message(message_id: str, request: Request):
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class RenameSession(BaseModel):
+    title: str
+
+@router.put("/sessions/{session_id}/rename")
+async def rename_session(session_id: str, request: RenameSession):
+    try:
+        supabase.table("chat_sessions").update(
+            {"title": request.title}
+        ).eq("id", session_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

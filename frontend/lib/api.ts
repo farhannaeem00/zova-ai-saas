@@ -123,4 +123,13 @@ rateMessage: async (messageId: string, rating: string) => {
   });
   return res.json();
 },
+// Rename session
+renameSession: async (sessionId: string, title: string) => {
+  const res = await fetch(`${API_URL}/api/chat/sessions/${sessionId}/rename`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  return res.json();
+},  
 };
